@@ -18,16 +18,23 @@ fn main() -> () {
                     let len = val_str.len();
                     let chunks = val_str.chars().collect::<Vec<_>>();
                     let res = chunks.chunks(len / 2).collect::<Vec<_>>();
-                    if len == 1 && res.len()==1 {
+                    if len == 1 && res.len() == 1 {
                         return false;
                     }
                     //println!("CHUNKS: {:?}. LEN: {:?}", res, len / 2);
-                    writer.write_all(format!("CHUNKS: {:?}. LEN: {:?} \n", res, len / 2).as_bytes());
-                    
+                    writer
+                        .write_all(format!("CHUNKS: {:?}. LEN: {:?} \n", res, len / 2).as_bytes());
+
                     match res.len() {
                         2 => {
                             let probe = res[0];
-                            println!("CHUNKS:{:?}. PROBE: {:?}. LEN/2:{:?} LEN:{:?}",res,probe,len/2,len);
+                            println!(
+                                "CHUNKS:{:?}. PROBE: {:?}. LEN/2:{:?} LEN:{:?}",
+                                res,
+                                probe,
+                                len / 2,
+                                len
+                            );
                             let t = res.iter().all(|c| (*c).eq(probe));
                             //dbg!(t)
                             t
@@ -50,7 +57,7 @@ fn main() -> () {
 
 fn read_input(input_file_name: &str) -> std::io::Lines<BufReader<File>> {
     use std::io::BufReader;
-    let file = File::open(input_file_name).unwrap() ;
+    let file = File::open(input_file_name).unwrap();
     let reader = BufReader::new(file);
     reader.lines()
 }
