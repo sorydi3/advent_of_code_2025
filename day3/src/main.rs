@@ -18,7 +18,7 @@ fn get_max<'a>(bateries: &'a [char]) -> usize {
             let current = bateries[i];
             bateries
                 .iter()
-                .skip(i+1)
+                .skip(i + 1)
                 .map(move |c| {
                     [current.to_string(), (*c).to_string()]
                         .concat()
