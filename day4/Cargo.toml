@@ -3,4 +3,10 @@ name = "day4"
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "day4"
+path = "src/main.rs"
+
 [dependencies]
+eframe = "0.32.3"
+utils = { path = "../utils" }
