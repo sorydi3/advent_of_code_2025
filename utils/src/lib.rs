@@ -1,7 +1,7 @@
+use std::fmt::Debug;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::prelude::*;
-use std::{collections::VecDeque, fmt::Debug};
 
 type Pos = (isize, isize); //(y,x)
 type BoardLen = (usize, usize); //(y,x)
