@@ -27,18 +27,16 @@ fn main() {
     });
 
     //Part 1
-    
+
     let response = ids.iter().fold::<usize, _>(0, |acc, id| {
         let res = ranges.iter().any(|range| range.contains(id));
         if res { acc + 1 } else { acc }
     });
-        
-     
+
     // Part 2
     let collection = ranges
         .into_iter()
         .map(|range| range.collect::<Vec<_>>())
         .flatten()
         .collect::<HashSet<_>>();
-
 }
