@@ -1,6 +1,6 @@
 pub use eframe::App;
-use eframe::{Frame, egui::Color32};
 pub use eframe::egui;
+use eframe::{Frame, egui::Color32};
 
 use crate::egui::Vec2;
 pub use eframe;
@@ -35,13 +35,14 @@ pub fn top_panel<B>(ctx: &eframe::egui::Context, content: impl FnOnce(&mut Ui) -
 }
 
 pub fn central_panel<B>(ctx: &eframe::egui::Context, content: impl FnOnce(&mut Ui) -> B) {
-
-    let my_custom_frame = egui::Frame{
+    let my_custom_frame = egui::Frame {
         fill: Color32::WHITE,
         ..Default::default()
     };
 
-    egui::CentralPanel::default().frame(my_custom_frame).show(ctx, content);
+    egui::CentralPanel::default()
+        .frame(my_custom_frame)
+        .show(ctx, content);
 }
 
 pub fn bottom_panel<B>(ctx: &eframe::egui::Context, content: impl FnOnce(&mut Ui) -> B) {
