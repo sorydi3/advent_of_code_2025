@@ -1,6 +1,6 @@
 use core::f32;
-use glam::Vec3;
-use std::collections::HashSet;
+use glam::Vec3 as Vec3;
+use std::{clone, collections::HashSet};
 
 use itertools::Itertools;
 use ui::{
@@ -10,14 +10,40 @@ use ui::{
 };
 
 use utils::read_input;
-/*
-#[derive(Clone,Debug,Default)]
+/* 
+#[derive(Clone,Debug,Default,Copy)]
 pub struct Vec3 {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
+    pub x: isize,
+    pub y: isize,
+    pub z: isize,
 }
- */
+
+use std::ops::Sub;
+
+impl Sub for Vec3 {
+    type Output = Self;
+    #[inline]
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x.sub(rhs.x),
+            y: self.y.sub(rhs.y),
+            z: self.z.sub(rhs.z),
+        }
+    }
+}
+
+
+
+impl Vec3 {
+    pub fn distance(&self,rhs: Self) -> f64 {
+        f64::sqrt(self.sub(rhs).dot(rhs) as f64)
+    }
+    pub fn dot(self,rhs: Self) -> isize {
+        (self.x * rhs.x) + (self.y * rhs.y) + (self.z * rhs.z)
+    }
+}
+
+*/
 
 type Jonctions = Vec<Vec3>;
 #[derive(Clone, Debug)]
@@ -103,35 +129,75 @@ impl Canva {
         let mut counter = 0;
         'outer: for (((jonction1, id_jon_1), (jonction2, id_jon_2)), distance) in
             self.permutations.as_ref().unwrap().iter()
-        {   
-            if counter == 10 {
+        {
+            if counter == 1000 {
                 break 'outer;
             }
 
-            counter+=1;
+            counter += 1;
 
             if groups.is_empty() {
                 let mut set = HashSet::<usize>::new();
                 set.insert(*id_jon_1);
                 set.insert(*id_jon_2);
                 groups.push(set);
-
-
-                
             } else {
                 if let Some(index) = groups.iter().position(|v| v.contains(id_jon_1)) {
+                    let mut both =false;
+                    let mut set1:HashSet<usize> = HashSet::default();
+                    let mut pos1:usize =0;
+                    let mut pos2:usize = 0;
+                    let mut set2:&mut HashSet<usize> = &mut HashSet::default();
                     if groups.iter().position(|v| v.contains(id_jon_2)).is_none() {
                         groups.get_mut(index).map(|set| {
                             set.insert(*id_jon_2);
                         });
+                    }else {
+
+                        both = true;
+
+                        pos1 = groups.iter().position(|v| v.contains(id_jon_1)).unwrap();
+                        set1 = groups.get(pos1).unwrap().clone();
+                        pos2 = groups.iter().position(|v| v.contains(id_jon_2)).unwrap();
+                        set2 = groups.get_mut(pos2).unwrap();
                     }
+
+                    if both && pos1!=pos2 {
+                        set1.iter().for_each(|id|{
+                            set2.insert(*id);
+                        });
+                        
+                        groups.remove(pos1);
+                    }
+
                 } else {
+                    
                     if let Some(index) = groups.iter().position(|v| v.contains(id_jon_2)) {
+                        let mut both =false;
+                        let mut set1:HashSet<usize> = HashSet::default();
+                        let mut pos1:usize = 0;
+                        let mut pos2: usize =0;
+                        let mut set2:&mut HashSet<usize> = &mut HashSet::default();
                         if groups.iter().position(|v| v.contains(id_jon_1)).is_none() {
                             groups.get_mut(index).map(|set| {
                                 set.insert(*id_jon_1);
                             });
+
+                        }else {
+                            both = true;
+                            pos1 = groups.iter().position(|v| v.contains(id_jon_1)).unwrap();
+                            set1 = groups.get(pos1).unwrap().clone();
+                            pos2 = groups.iter().position(|v| v.contains(id_jon_2)).unwrap();
+                            set2 = groups.get_mut(pos2).unwrap();
                         }
+
+                        if both && pos1!=pos2 {
+                            set1.iter().for_each(|id|{
+                                set2.insert(*id);
+                            });
+                            groups.remove(pos1);
+                        }
+
                     } else {
                         // when none of the jonction cannot be addet to a existing circuit
                         let mut set = HashSet::<usize>::new();
@@ -141,14 +207,18 @@ impl Canva {
                     }
                 }
             }
-            println!("GROUP: {:?}",groups);
+            println!("PAIR:({},{}) GROUP: {:?}",id_jon_1,id_jon_2, groups);
         }
-        let res = groups.sort_by_key(|c|c.len());
+        let res = groups.sort_by_key(|c| c.len());
         groups.reverse();
-        println!("GROUPS: {:?}", groups);
-        
-    }
 
+        let res = groups.iter().take(3).map(|value| {
+            value.len()
+        }).fold(1, |acc,v| acc*v);
+        println!("GROUPS: {:?}", groups);
+        println!("LEN: {}",res);
+    }
+    /*
     fn get_clusters(&mut self) {
         let mut visited: Vec<bool> = vec![false; self.jonctions.len()];
         let mut groups: Vec<(Vec<usize>, Vec<Vec3>)> = vec![];
@@ -158,10 +228,6 @@ impl Canva {
         for (index_p1, point1) in self.jonctions.iter().enumerate() {
             if counter == 9 {
                 break;
-            }
-
-            if visited[index_p1] {
-                continue;
             }
 
             let j = index_p1;
@@ -187,7 +253,11 @@ impl Canva {
 
             //println!("DISTANCES: {:?} MIN: {:?}",distances,min_jont);
 
-            if visited[min_jont.1] {
+
+            if visited[index_p1] &&  {
+                continue;
+            }
+            else if visited[min_jont.1] {
                 let res = groups
                     .iter_mut()
                     .find(|group| group.0.contains(&min_jont.1));
@@ -234,8 +304,8 @@ impl Canva {
             self.permutations.iter().flatten().collect::<Vec<_>>().len()
         );
          */
-    }
-
+    } */
+    /*
     fn shapes_points(&self, ui: &mut Ui) {
         let (response, painter) = ui.allocate_painter(
             egui::Vec2::new(ui.available_width(), ui.available_height()),
@@ -280,10 +350,13 @@ impl Canva {
             })
             .collect::<Vec<_>>();
     }
+    */
+
 }
 
 impl App for Canva {
     fn update(&mut self, ctx: &eframe::egui::Context, _: &mut eframe::Frame) {
+        /*
         top_panel(ctx, |ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 ui.add(egui::Slider::new(&mut self.scale, 0.0..=1000.0).text("My value"));
@@ -350,6 +423,7 @@ impl App for Canva {
              });
          });
         */
+         */
     }
 }
 
