@@ -5,8 +5,8 @@ use itertools::Itertools;
 use ui::{
     App, CustomState, bottom_panel, central_panel, eframe,
     egui::{
-        self, Align2, Color32, CornerRadius, FontId, Label, Pos2 as pos2, Rect, Stroke, StrokeKind, Ui,
-        Vec2,
+        self, Align2, Color32, CornerRadius, FontId, Label, Pos2 as pos2, Rect, Stroke, StrokeKind,
+        Ui, Vec2,
     },
     top_panel, ui,
 };
@@ -22,16 +22,13 @@ pub struct Pos2 {
  */
 #[derive(Clone, Debug)]
 struct Pos2 {
-    pub x:isize,
-    pub y:isize
+    pub x: isize,
+    pub y: isize,
 }
 
 type Cordinates = Vec<Pos2>;
 
 #[derive(Clone, Debug)]
-
-
-
 
 struct Canva {
     coordinates: Cordinates,
@@ -70,7 +67,8 @@ impl CustomState for Canva {
                 .expect("INVALID COORDINATE FOUND!!")
             })
             .collect::<Vec<_>>();
-        Self { //4294823708
+        Self {
+            //4294823708
             coordinates: vec_pos_2d,
             ..Default::default()
         }
@@ -79,27 +77,36 @@ impl CustomState for Canva {
 }
 
 impl Canva {
-
-    fn compute_distance(&self,pos1:Pos2,pos2:Pos2) ->isize {
-       let x:isize = (pos1.x-pos2.x).abs()+1;
-       let y = (pos1.y-pos2.y).abs()+1;
-        x*y
+    fn compute_distance(&self, pos1: Pos2, pos2: Pos2) -> isize {
+        let x: isize = (pos1.x - pos2.x).abs() + 1;
+        let y = (pos1.y - pos2.y).abs() + 1;
+        x * y
     }
     fn perm(mut self) -> Box<Self> {
+        self.permutations = Some(
+            self.coordinates
+                .iter()
+                .permutations(2)
+                .map(|coordinates| {
+                    (
+                        (coordinates[0].clone(), coordinates[1].clone()),
+                        self.compute_distance(coordinates[0].clone(), coordinates[1].clone()),
+                    )
+                })
+                .sorted_by_key(|c| c.1)
+                .collect::<Vec<_>>(),
+        );
 
-         self.permutations = Some(self.coordinates.iter().permutations(2).map(|coordinates| {
-            ((coordinates[0].clone(), coordinates[1].clone()),self.compute_distance(coordinates[0].clone(), coordinates[1].clone()))
-                                
-        })
-        .sorted_by_key(|c| c.1)
-        .collect::<Vec<_>>());
-
-        println!("PERMUTACIONS: {:?}",&self.permutations.as_ref().unwrap().iter().map(|c| {
-            c.1
-        }).collect::<Vec<_>>());
-
-
-
+        println!(
+            "PERMUTACIONS: {:?}",
+            &self
+                .permutations
+                .as_ref()
+                .unwrap()
+                .iter()
+                .map(|c| { c.1 })
+                .collect::<Vec<_>>()
+        );
 
         Box::new(self)
     }
@@ -114,8 +121,8 @@ impl Canva {
                         .enumerate()
                         .map(|sec_coord| {
                             (
-                                (first_coord.1.clone(), sec_coord.1.clone()),self.compute_distance(first_coord.1.clone(), sec_coord.1.clone())
-                                
+                                (first_coord.1.clone(), sec_coord.1.clone()),
+                                self.compute_distance(first_coord.1.clone(), sec_coord.1.clone()),
                             )
                         })
                         .collect::<Vec<_>>()
@@ -125,77 +132,83 @@ impl Canva {
                 .collect::<Vec<_>>(),
         );
 
-        println!("PERMUTACIONS: {:?}",&self.permutations.as_ref().unwrap().iter().map(|c| {
-            c.1
-        }).collect::<Vec<_>>());
+        println!(
+            "PERMUTACIONS: {:?}",
+            &self
+                .permutations
+                .as_ref()
+                .unwrap()
+                .iter()
+                .map(|c| { c.1 })
+                .collect::<Vec<_>>()
+        );
 
         Box::new(self)
     }
 
     fn shapes_points(&self, ui: &mut Ui) {
 
-        /* 
-        let (response, painter) = ui.allocate_painter(
-            egui::Vec2::new(ui.available_width(), ui.available_height()),
-            egui::Sense::hover(),
-        );
+        /*
+            let (response, painter) = ui.allocate_painter(
+                egui::Vec2::new(ui.available_width(), ui.available_height()),
+                egui::Sense::hover(),
+            );
 
-        let to_screen = egui::emath::RectTransform::from_to(
-            egui::Rect::from_min_size(Pos2::ZERO, Vec2::splat(1000.)),
-            response.rect,
-        );
+            let to_screen = egui::emath::RectTransform::from_to(
+                egui::Rect::from_min_size(Pos2::ZERO, Vec2::splat(1000.)),
+                response.rect,
+            );
 
-        //painter.rect(rect, corner_radius, fill_color, stroke, stroke_kind)
+            //painter.rect(rect, corner_radius, fill_color, stroke, stroke_kind)
 
-        println!("SCREEN COORDINATES: {:?}", to_screen);
+            println!("SCREEN COORDINATES: {:?}", to_screen);
 
-        let _ = self
-            .permutations
-            .as_ref()
-            .unwrap()
-            .iter()
-            .enumerate()
-            .map(|(i, point)| {
-                let size = egui::Vec2::splat(2.0 * 8.);
-                let ((pos1, pos2), _) = point;
-                let point_in_screen_sup = to_screen.transform_pos(
-                    Pos2 {
-                        x: pos1.x,
-                        y: pos1.y,
-                    } / self.scale,
-                );
+            let _ = self
+                .permutations
+                .as_ref()
+                .unwrap()
+                .iter()
+                .enumerate()
+                .map(|(i, point)| {
+                    let size = egui::Vec2::splat(2.0 * 8.);
+                    let ((pos1, pos2), _) = point;
+                    let point_in_screen_sup = to_screen.transform_pos(
+                        Pos2 {
+                            x: pos1.x,
+                            y: pos1.y,
+                        } / self.scale,
+                    );
 
-                let point_in_screen_inf = to_screen.transform_pos(
-                    Pos2 {
-                        x: pos2.x,
-                        y: pos2.y,
-                    } / self.scale,
-                );
+                    let point_in_screen_inf = to_screen.transform_pos(
+                        Pos2 {
+                            x: pos2.x,
+                            y: pos2.y,
+                        } / self.scale,
+                    );
 
-                //println!("FROM: {}. IN SCREEN: {}", point, point_in_screen);
+                    //println!("FROM: {}. IN SCREEN: {}", point, point_in_screen);
 
-                let stroke = Stroke::new(1., Color32::BLACK);
-                let rec = Rect::from_min_max(point_in_screen_sup, point_in_screen_inf);
-                painter.rect(
-                    rec.clone(),
-                    CornerRadius::same(3),
-                    Color32::LIGHT_GREEN,
-                    stroke,
-                    StrokeKind::Inside,
-                );
-                painter.text(
-                    rec.center(),
-                    Align2::CENTER_CENTER,
-                    format!("{}", point_in_screen_sup),
-                    FontId::new(15., egui::FontFamily::Monospace),
-                    Color32::BLACK,
-                );
-            })
-            .collect::<Vec<_>>();
+                    let stroke = Stroke::new(1., Color32::BLACK);
+                    let rec = Rect::from_min_max(point_in_screen_sup, point_in_screen_inf);
+                    painter.rect(
+                        rec.clone(),
+                        CornerRadius::same(3),
+                        Color32::LIGHT_GREEN,
+                        stroke,
+                        StrokeKind::Inside,
+                    );
+                    painter.text(
+                        rec.center(),
+                        Align2::CENTER_CENTER,
+                        format!("{}", point_in_screen_sup),
+                        FontId::new(15., egui::FontFamily::Monospace),
+                        Color32::BLACK,
+                    );
+                })
+                .collect::<Vec<_>>();
+        }
+        */
     }
-    */
-}
-
 }
 
 impl App for Canva {
