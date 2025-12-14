@@ -1,5 +1,5 @@
 use core::f32;
-use glam::Vec3 as Vec3;
+use glam::Vec3;
 use std::{clone, collections::HashSet};
 
 use itertools::Itertools;
@@ -10,7 +10,7 @@ use ui::{
 };
 
 use utils::read_input;
-/* 
+/*
 #[derive(Clone,Debug,Default,Copy)]
 pub struct Vec3 {
     pub x: isize,
@@ -143,17 +143,16 @@ impl Canva {
                 groups.push(set);
             } else {
                 if let Some(index) = groups.iter().position(|v| v.contains(id_jon_1)) {
-                    let mut both =false;
-                    let mut set1:HashSet<usize> = HashSet::default();
-                    let mut pos1:usize =0;
-                    let mut pos2:usize = 0;
-                    let mut set2:&mut HashSet<usize> = &mut HashSet::default();
+                    let mut both = false;
+                    let mut set1: HashSet<usize> = HashSet::default();
+                    let mut pos1: usize = 0;
+                    let mut pos2: usize = 0;
+                    let mut set2: &mut HashSet<usize> = &mut HashSet::default();
                     if groups.iter().position(|v| v.contains(id_jon_2)).is_none() {
                         groups.get_mut(index).map(|set| {
                             set.insert(*id_jon_2);
                         });
-                    }else {
-
+                    } else {
                         both = true;
 
                         pos1 = groups.iter().position(|v| v.contains(id_jon_1)).unwrap();
@@ -162,28 +161,25 @@ impl Canva {
                         set2 = groups.get_mut(pos2).unwrap();
                     }
 
-                    if both && pos1!=pos2 {
-                        set1.iter().for_each(|id|{
+                    if both && pos1 != pos2 {
+                        set1.iter().for_each(|id| {
                             set2.insert(*id);
                         });
-                        
+
                         groups.remove(pos1);
                     }
-
                 } else {
-                    
                     if let Some(index) = groups.iter().position(|v| v.contains(id_jon_2)) {
-                        let mut both =false;
-                        let mut set1:HashSet<usize> = HashSet::default();
-                        let mut pos1:usize = 0;
-                        let mut pos2: usize =0;
-                        let mut set2:&mut HashSet<usize> = &mut HashSet::default();
+                        let mut both = false;
+                        let mut set1: HashSet<usize> = HashSet::default();
+                        let mut pos1: usize = 0;
+                        let mut pos2: usize = 0;
+                        let mut set2: &mut HashSet<usize> = &mut HashSet::default();
                         if groups.iter().position(|v| v.contains(id_jon_1)).is_none() {
                             groups.get_mut(index).map(|set| {
                                 set.insert(*id_jon_1);
                             });
-
-                        }else {
+                        } else {
                             both = true;
                             pos1 = groups.iter().position(|v| v.contains(id_jon_1)).unwrap();
                             set1 = groups.get(pos1).unwrap().clone();
@@ -191,13 +187,12 @@ impl Canva {
                             set2 = groups.get_mut(pos2).unwrap();
                         }
 
-                        if both && pos1!=pos2 {
-                            set1.iter().for_each(|id|{
+                        if both && pos1 != pos2 {
+                            set1.iter().for_each(|id| {
                                 set2.insert(*id);
                             });
                             groups.remove(pos1);
                         }
-
                     } else {
                         // when none of the jonction cannot be addet to a existing circuit
                         let mut set = HashSet::<usize>::new();
@@ -207,16 +202,18 @@ impl Canva {
                     }
                 }
             }
-            println!("PAIR:({},{}) GROUP: {:?}",id_jon_1,id_jon_2, groups);
+            println!("PAIR:({},{}) GROUP: {:?}", id_jon_1, id_jon_2, groups);
         }
         let res = groups.sort_by_key(|c| c.len());
         groups.reverse();
 
-        let res = groups.iter().take(3).map(|value| {
-            value.len()
-        }).fold(1, |acc,v| acc*v);
+        let res = groups
+            .iter()
+            .take(3)
+            .map(|value| value.len())
+            .fold(1, |acc, v| acc * v);
         println!("GROUPS: {:?}", groups);
-        println!("LEN: {}",res);
+        println!("LEN: {}", res);
     }
     /*
     fn get_clusters(&mut self) {
@@ -351,7 +348,6 @@ impl Canva {
             .collect::<Vec<_>>();
     }
     */
-
 }
 
 impl App for Canva {
