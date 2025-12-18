@@ -84,27 +84,22 @@ impl Canva {
         let mut visited: Vec<&String> = Vec::new();
 
         while let Some((candidate_name, candidate_neight)) = satck.pop_back() {
-            println!("NAME: {:?} candidates: {:?} ",candidate_name,candidate_neight);
-            if !visited.contains(&candidate_name) {
-                visited.push(candidate_name);
+            println!("NAME: {:?} candidates: {:?} visitd: {:?} ",candidate_name,candidate_neight,visited);
+            //if !visited.contains(&candidate_name) {
+                visited.push(candidate_name); // AS VISITED
                 for neig in candidate_neight.iter() {
-                    if neig.eq("out") {
-                        self.get_node(neig).map(|node| {
-                            visited.push(neig);
-                            println!("PATH FOUND");
-                            println!("{:?}", visited)
-                        });
-                    }else {
-                        if !visited.contains(&neig) {
-                            let node = self.get_node(neig);
-                            node.map(|node| {
-                                satck.push_back(node);
-                            });
-                        }
+                    
+                    if visited.contains(&neig) {
+                        visited.remove(visited.iter().position(|c|(**c).eq(neig)).unwrap());
                     }
 
+                    let node = self.get_node(neig);
+                        node.map(|node| {
+                            satck.push_back(node);
+                    });
+                    
+
                 }
-            }
         }
     }
 
