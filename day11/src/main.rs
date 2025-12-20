@@ -21,17 +21,17 @@ impl Default for Canva {
     fn default() -> Self {
         Self {
             nodes: HashMap::new(),
-        }
+        }   
     }
 }
 
 impl CustomState for Canva {
     fn new() -> Box<Self> {
-        let nodes = read_input("./day11/input1.txt");
+        let nodes = read_input("./day11/input.txt");
         let mut vec_nodes = nodes
             .map(|line| {
                 line.map(|line| {
-                    let node = line
+                    let node = line 
                         .split_once(":")
                         .map(|(device_name, outputs)| {
                             let node_name: String = device_name.trim().to_string();
@@ -79,16 +79,35 @@ impl Canva {
     }
 
     fn get_path_v2(&mut self) {
-        let init_node = self.nodes.get("you").unwrap();
+        let init_node = self.nodes.get("svr").unwrap();
         let mut satck: VecDeque<&(String, Vec<String>)> = VecDeque::from([init_node]);
         let mut visited: Vec<&String> = Vec::new();
 
+        let mut counter = 0 ;
+
+        let mut counter2 = 0;
+
         while let Some((candidate_name, candidate_neight)) = satck.pop_back() {
-            println!("NAME: {:?} candidates: {:?} visitd: {:?} ",candidate_name,candidate_neight,visited);
+            //println!("NAME: {:?} candidates: {:?} visitd: {:?} ",candidate_name,candidate_neight,visited);
             //if !visited.contains(&candidate_name) {
-                visited.push(candidate_name); // AS VISITED
+                   visited.push(candidate_name); // AS VISITED
                 for neig in candidate_neight.iter() {
-                    
+
+                    if neig.eq("out") {
+
+                        let arr = vec!["fft","dac"];
+                        if arr.into_iter().all(|node| visited.contains(&&node.to_string())) {
+
+                            println!("BOTH: {:?}",visited);
+                            counter2+=1;
+                        }
+
+                        counter+=1;
+                        //println!("PATH FOUND!! {visited:?}");
+
+
+                    }
+
                     if visited.contains(&neig) {
                         visited.remove(visited.iter().position(|c|(**c).eq(neig)).unwrap());
                     }
@@ -97,10 +116,11 @@ impl Canva {
                         node.map(|node| {
                             satck.push_back(node);
                     });
-                    
 
                 }
         }
+
+        println!("COUNTER: {counter} COUNTER2: {counter2}");
     }
 
     fn get_pos_candidate(&self, candidate_name: &str) -> Option<usize> {
