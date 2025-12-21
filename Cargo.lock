@@ -730,6 +730,11 @@ dependencies = [
 [[package]]
 name = "day12"
 version = "0.1.0"
+dependencies = [
+ "itertools",
+ "ui",
+ "utils",
+]
 
 [[package]]
 name = "day2"
