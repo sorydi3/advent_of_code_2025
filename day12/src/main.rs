@@ -12,6 +12,20 @@ struct Shape {
     shape: Board,
 }
 
+impl fmt::Display for Shape  {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f,"").expect("mm");
+        self.shape.iter().for_each(|line| {
+            line.iter().for_each(|char| {
+                write!(f, " {} ", char).expect("mmm");
+            });
+            writeln!(f,"").expect("mm");
+        });
+
+        Ok(())
+    }
+}
+
 
 impl Default for Shape {
     fn default() -> Self {
@@ -56,6 +70,21 @@ impl Region {
     }
 }
 
+
+impl fmt::Display for Region  {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f,"").expect("mm");
+        self.region.iter().for_each(|line| {
+            line.iter().for_each(|char| {
+                write!(f, " {} ", char).expect("mmm");
+            });
+            writeln!(f,"").expect("mm");
+        });
+
+        Ok(())
+    }
+}
+
 #[derive(Clone, Debug)]
 struct Canva {
     counter: u8,
@@ -74,6 +103,7 @@ impl Default for Canva {
 }
 
 use itertools::Chunk;
+use core::fmt;
 use std::{path::Display, slice::Iter};
 
 impl Canva {
@@ -84,10 +114,10 @@ impl Canva {
     ) -> () {
         //let res = chunk.map(|c| println!("LINE :{:?} ",c)).collect::<Vec<_>>();
 
-        let mut chunk = chunk;
+        let mut chunk = chunk.peekable();
 
         if let Ok(chape_id) = chunk
-            .next()
+            .peek()
             .as_ref()
             .clone()
             .unwrap()
@@ -95,13 +125,16 @@ impl Canva {
             .parse::<u8>()
         {
             let mut board: Board = Board::new();
+
+
             while let Some(line) = chunk.next() {
                 board.push(line.chars().collect());
             }
             let shape = Shape::new(chape_id, board);
-            println!("SHAPE: {:?}", shape);
+            println!("SHAPE: {}", shape);
             shapes.push(shape);
         } else {
+            
             chunk.for_each(|region| {
                 if let Some((board_size, shape_count)) = region.split_once(":") {
                     if let Some((x, y)) = board_size.split_once("x") {
@@ -115,7 +148,7 @@ impl Canva {
                             .collect::<Vec<_>>();
 
                         let region: Region = Region::new(board, shapes_count);
-                        println!("REGION:: {:?}", region);
+                        println!("REGION:: {}", region);
 
                         regions.push(region);
                     }
@@ -135,15 +168,17 @@ impl CustomState for Canva {
             .collect::<Vec<_>>();
 
         let chunks = res.iter().chunks(4);
+
+       
         let mut shapes: Vec<Shape> = vec![];
         let mut regions: Vec<Region> = vec![];
-        for chu in chunks.into_iter() {
-            println!("CHUNK:-----");
+        for chu in chunks.into_iter().enumerate() {
+            println!("CHUNK:----- {}",chu.0);
 
             //let mut chup =  chu;
-            Canva::process_chunk(chu, &mut shapes, &mut regions);
+            Canva::process_chunk(chu.1, &mut shapes, &mut regions);
         }
-        panic!("HERE");
+        Box::new(Self { counter: 0, regions, shapes })
     }
 }
 
