@@ -2,9 +2,6 @@ use itertools::Itertools;
 use ui::{CustomState, eframe::glow::VENDOR};
 use utils::read_input;
 
-
-
-
 type Board = Vec<Vec<char>>;
 #[derive(Clone, Debug)]
 struct Shape {
@@ -12,20 +9,19 @@ struct Shape {
     shape: Board,
 }
 
-impl fmt::Display for Shape  {
+impl fmt::Display for Shape {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f,"").expect("mm");
+        writeln!(f, "").expect("mm");
         self.shape.iter().for_each(|line| {
             line.iter().for_each(|char| {
                 write!(f, " {} ", char).expect("mmm");
             });
-            writeln!(f,"").expect("mm");
+            writeln!(f, "").expect("mm");
         });
 
         Ok(())
     }
 }
-
 
 impl Default for Shape {
     fn default() -> Self {
@@ -45,6 +41,26 @@ impl Shape {
     }
     fn reflecte(&self) -> Self {
         todo!()
+    }
+
+    fn area(&self) -> usize {
+        self.shape[0].len() * self.shape.len()
+    }
+
+    fn shapes_area(shapes: Vec<Self>) -> usize {
+        shapes.iter().fold(0, |acc, shape| acc + shape.area())
+    }
+
+    pub fn tails_count(shapes: Vec<Self>) -> usize {
+        shapes
+            .iter()
+            .fold(0, |acc, shape| acc + shape.count() as usize)
+    }
+
+    pub fn count(&self) -> u8 {
+        self.shape.iter().fold(0, |acc, row| {
+            row.iter().filter(|c| (*c).eq(&'#')).count() as u8 + acc
+        })
     }
     pub fn shapes(&self) -> Vec<Shape> {
         //only rotate
@@ -68,17 +84,44 @@ impl Region {
             region,
         }
     }
+
+    fn total_shape_count_are_naive(&self, shapes: &Vec<Shape>) -> (usize, usize) {
+        let mut count_tailes = 0;
+        let sum = self
+            .shape_count
+            .iter()
+            .enumerate()
+            .map(|count| {
+                let res = count.1 * 9;
+                if res > 0 {
+                    count_tailes = count_tailes + (count.1 * shapes[count.0].count() as usize);
+                }
+
+                res
+            })
+            .sum::<usize>();
+        (sum, count_tailes)
+    }
+
+    fn check(&self, shapes: &Vec<Shape>) -> bool {
+        let region_area = self.area();
+        let (sum_naive, tails_count) = self.total_shape_count_are_naive(shapes);
+        sum_naive <= region_area || tails_count <= region_area
+    }
+
+    fn area(&self) -> usize {
+        self.region[0].len() * self.region.len()
+    }
 }
 
-
-impl fmt::Display for Region  {
+impl fmt::Display for Region {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f,"").expect("mm");
+        writeln!(f, "").expect("mm");
         self.region.iter().for_each(|line| {
             line.iter().for_each(|char| {
                 write!(f, " {} ", char).expect("mmm");
             });
-            writeln!(f,"").expect("mm");
+            writeln!(f, "").expect("mm");
         });
 
         Ok(())
@@ -102,8 +145,8 @@ impl Default for Canva {
     }
 }
 
-use itertools::Chunk;
 use core::fmt;
+use itertools::Chunk;
 use std::{path::Display, slice::Iter};
 
 impl Canva {
@@ -126,15 +169,13 @@ impl Canva {
         {
             let mut board: Board = Board::new();
 
-
             while let Some(line) = chunk.next() {
                 board.push(line.chars().collect());
             }
             let shape = Shape::new(chape_id, board);
-            println!("SHAPE: {}", shape);
+            //println!("SHAPE: {}", shape);
             shapes.push(shape);
         } else {
-            
             chunk.for_each(|region| {
                 if let Some((board_size, shape_count)) = region.split_once(":") {
                     if let Some((x, y)) = board_size.split_once("x") {
@@ -148,7 +189,7 @@ impl Canva {
                             .collect::<Vec<_>>();
 
                         let region: Region = Region::new(board, shapes_count);
-                        println!("REGION:: {}", region);
+                        //println!("REGION:: {}", region);
 
                         regions.push(region);
                     }
@@ -156,11 +197,20 @@ impl Canva {
             });
         }
     }
+    fn check_regions(&self) -> i32 {
+        let mut counter = 0;
+        self.regions.iter().for_each(|region| {
+            if region.check(&self.shapes) {
+                counter += 1;
+            }
+        });
+        counter
+    }
 }
 
 impl CustomState for Canva {
     fn new() -> Box<Self> {
-        let mut lines = read_input("./day12/input2.txt");
+        let mut lines = read_input("./day12/input.txt");
 
         let res = lines
             .filter(|line| !line.as_ref().unwrap().eq(""))
@@ -169,20 +219,21 @@ impl CustomState for Canva {
 
         let chunks = res.iter().chunks(4);
 
-       
         let mut shapes: Vec<Shape> = vec![];
         let mut regions: Vec<Region> = vec![];
         for chu in chunks.into_iter().enumerate() {
-            println!("CHUNK:----- {}",chu.0);
-
             //let mut chup =  chu;
             Canva::process_chunk(chu.1, &mut shapes, &mut regions);
         }
-        Box::new(Self { counter: 0, regions, shapes })
+        Box::new(Self {
+            counter: 0,
+            regions,
+            shapes,
+        })
     }
 }
 
 fn main() {
     let canva = Canva::new();
-    println!("Hello, world!");
+    println!("COUNT: {}", canva.check_regions());
 }
